@@ -8,7 +8,7 @@ allEqual a b c = (a == b) && (b == c)
 all4Equal :: Int -> Int -> Int -> Int -> Bool
 all4Equal a b c d = allEqual a b c && d == a 
 
-EqualCount 
+--EqualCount 
 
 maxi :: Int -> Int -> Int
 maxi a b | a >= b = a
@@ -27,3 +27,6 @@ totalVendas n = vendas n + totalVendas (n-1)
 fat :: Int -> Int
 fat 1 = 1
 fat a = a * fat (a-1)
+
+imc :: Float -> Float -> Float
+imc p a = p/(a*a) 
