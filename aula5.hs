@@ -1,5 +1,3 @@
-import Graphics.Win32 (bST_CHECKED)
-import System.Directory.Internal.Prelude (permissionErrorType)
 --compreensao de listas
 --[x*x | x <- [1..10]]
 
