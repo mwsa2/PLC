@@ -7,7 +7,7 @@
 
 typedef struct _jogador
 {
-    string nome;
+    char nome[8];
     int pontuacao;
     int height;
     struct _arvore *right;
@@ -31,7 +31,7 @@ int height(Jogador *root)
     return root->height;
 }
 
-Jogador *AVLsearch(Jogador *root, int pontuacao)
+Jogador *AVLsearchPontuacao(Jogador *root, int pontuacao)
 {
     if (root == NULL)
         return NULL;
@@ -50,10 +50,28 @@ Jogador *AVLsearch(Jogador *root, int pontuacao)
 }
 
 
+Jogador *AVLsearchNome(Jogador *root, char nome)
+{
+    if (root == NULL)
+        return NULL;
+
+    else if  if (strcmp(root->nome, nome) == 0)
+        return root;
+
+    else if (root->pontuacao > pontuacao)
+    {
+        AVLsearch(root->left, pontuacao);
+    }
+    else
+    {
+        AVLsearch(root->right, pontuacao);
+    }
+}
+
 Jogador *rotate_left(Jogador *root)
 {
-    Arvore *y = root->right;
-    Arvore *T2 = y->left;
+    Jogador *y = root->right;
+    Jogador *T2 = y->left;
     y->left = root;
     root->right = T2;
     // BF
@@ -64,8 +82,8 @@ Jogador *rotate_left(Jogador *root)
 
 Jogador *rotate_right(Jogador *root)
 {
-    Arvore *x = root->left;
-    Arvore *T2 = x->right;
+    Jogador *x = root->left;
+    Jogador *T2 = x->right;
     x->right = root;
     root->left = T2;
     // BF
@@ -86,12 +104,12 @@ Jogador *inserir(Jogador *root, string nome, int pontuacao)
     //
     if (root == NULL)
     {
-        Arvore *no = (Arvore *)malloc(sizeof(Arvore));
+        Jogador *no = (Jogador *)malloc(sizeof(Jogador));
         no->left = NULL;
         no->right = NULL;
         no->nome = nome;
         no->pontuacao = pontuacao;
-	no->height = 1;
+	    no->height = 1;
         return no;
     }
     else if (root->pontuacao == pontuacao)
@@ -128,50 +146,40 @@ Jogador *inserir(Jogador *root, string nome, int pontuacao)
 
 int main()
 {
-    Arvore *root = NULL;
+    Jogador *root = NULL;
     // Inicio
     int pontuacao = 0;
-    char nome[60];
-    char input[12];
+    char nome[8];
+    char input[30];
     char command[4];
     int continuar = 1;
     //
-	aqui
-    while (continuar)
+    int cases = 0;
+
+    scanf("%d", &cases);
+    for (int i = 0; i < cases; i++)
     {
-        scanf(" %11[^\n]s", &input);
-        continuar = strcmp(input, "END");
-        if (continuar)
-        {
-            sscanf(input, "%s %d %d", &command, &id, &wei);
-            if (strcmp(command, "ADD") == 0)
-            {
-                root = inserir(root, &globalWei, id, wei);
-                printf("%d\n", globalWei);
-            }
-            else if (strcmp(command, "WEI") == 0)
-            {
-                Arvore *search = AVLsearch(root, id);
-                if (search != NULL)
-                    printf("%d %d\n", search->dispositivo->wei, findDepth(root, id));
-                else
-                    printf("%d %d\n", 0, -1);
-            }
-            else if (strcmp(command, "RNK") == 0)
-            {
-            	if(root->dispositivo->id == id)
-		            printf("%d\n", root->rnk);
-            	else 
-                    printf("%d\n", getRNK(root, id));
-            }
-            else if (strcmp(command, "DEB") == 0)
-            {
-                printf("Altura: %d\n", height(root));
-                printf("Bytes: %d\n", globalWei);
-                printf("Raiz: %d\n", root->dispositivo->id);
-                in_ordem(root);
-            }
+        scanf(" %29[^\n]s", &input);
+        //
+        sscanf(input, "%s ", &command);
+        if (strcmp(command, "ADD") == 0)
+        {   
+            sscanf(input, "%s %s %d", &command, &nome, &pontuacao);
+
+            Jogador *search = AVLsearch(root, id);
+            if (search != NULL)
+                printf("%d %d\n", search->dispositivo->wei, findDepth(root, id));
+            else
+                printf("%d %d\n", 0, -1);
+
+            root = inserir(root, nome, pontuacao);
+            printf("%d\n", globalWei);
         }
+        else if (strcmp(command, "WEI") == 0)
+        {
+            
+        }
+        
     }
     return 0;
 }
