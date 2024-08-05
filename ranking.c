@@ -9,6 +9,7 @@ typedef struct _jogador
 {
     string nome;
     int pontuacao;
+    int height;
     struct _arvore *right;
     struct _arvore *left;
 } Jogador;
@@ -22,33 +23,34 @@ void in_ordem(Jogador *root)
         in_ordem(root->right);
     }
 }
-aqui
-Jogador *AVLsearch(Jogador *root, int id)
-{
-    if (root == NULL)
-        return NULL;
 
-    else if (root->dispositivo->id == id)
-        return root;
-
-    else if (root->dispositivo->id > id)
-    {
-        AVLsearch(root->left, id);
-    }
-    else
-    {
-        AVLsearch(root->right, id);
-    }
-}
-
-int height(Arvore *root)
+int height(Jogador *root)
 {
     if (root == NULL)
         return 0;
     return root->height;
 }
 
-Arvore *rotate_left(Arvore *root)
+Jogador *AVLsearch(Jogador *root, int pontuacao)
+{
+    if (root == NULL)
+        return NULL;
+
+    else if (root->pontuacao == pontuacao)
+        return root;
+
+    else if (root->pontuacao > pontuacao)
+    {
+        AVLsearch(root->left, pontuacao);
+    }
+    else
+    {
+        AVLsearch(root->right, pontuacao);
+    }
+}
+
+
+Jogador *rotate_left(Jogador *root)
 {
     Arvore *y = root->right;
     Arvore *T2 = y->left;
@@ -57,19 +59,10 @@ Arvore *rotate_left(Arvore *root)
     // BF
     root->height = max(height(root->left), height(root->right)) + 1;
     y->height = max(height(y->left), height(y->right)) + 1;
-    //RNK
-	/*int somador = 0;
-	while(T2 != NULL){
-		somador += T2->rnk + T2->dispositivo->wei;
-		T2 = T2->right;
-	}
-    y->rnk = root->rnk + root->dispositivo->wei + somador;*/
-    updateRNK(root);
-    updateRNK(y);
     return y;
 }
 
-Arvore *rotate_right(Arvore *root)
+Jogador *rotate_right(Jogador *root)
 {
     Arvore *x = root->left;
     Arvore *T2 = x->right;
@@ -78,86 +71,54 @@ Arvore *rotate_right(Arvore *root)
     // BF
     root->height = max(height(root->left), height(root->right)) + 1;
     x->height = max(height(x->left), height(x->right)) + 1;
-    //RNK
-	updateRNK(root);
-    updateRNK(x);
     return x;
 }
 
-int getBalance(Arvore *root)
+int getBalance(Jogador *root)
 {
     if (root == NULL)
         return 0;
     return height(root->left) - height(root->right);
 }
-int getRNK(Arvore *root, int id)
-{
-    //printf("ENTER\n");
-    if(root == NULL){
-    	//printf("ROOT NULL\n");
-        return 0;	
-    }    
-	if(root->dispositivo->id == id){
-        //printf("IS NODE\n");
-	    return root->rnk;
-    }    
-	else if(root->dispositivo->id < id){
-        //printf("%d IS MENOR QUE %d\n", root->dispositivo->id, id);
-	    //printf("ACUMULE %d %d\n", root->rnk, root->dispositivo->wei);
-        return root->rnk + root->dispositivo->wei + getRNK(root->right, id);
-    }    
-    else{
-        //printf("%d IS MAIOR QUE %d\n", root->dispositivo->id, id);
-	    return getRNK(root->left, id);       
-    }    
-}
 
-Arvore *inserir(Arvore *root, int *globalWei, int id, int wei)
+Jogador *inserir(Jogador *root, string nome, int pontuacao)
 {
     //
     if (root == NULL)
     {
-        Dispositivo *dispositivo = (Dispositivo *)malloc(sizeof(Dispositivo));
-        dispositivo->id = id;
-        dispositivo->wei = wei;
         Arvore *no = (Arvore *)malloc(sizeof(Arvore));
         no->left = NULL;
         no->right = NULL;
-        no->dispositivo = dispositivo;
-        no->height = 1;
-        no->rnk = 0;
-        *globalWei += wei;
+        no->nome = nome;
+        no->pontuacao = pontuacao;
+	no->height = 1;
         return no;
     }
-    else if (root->dispositivo->id == id)
+    else if (root->pontuacao == pontuacao)
     {
-        root->dispositivo->wei += wei;
-        *globalWei += wei;
+        root->pontuacao = pontuacao;
         return root;
     }
-    else if (root->dispositivo->id > id)
+    else if (root->pontuacao > pontuacao)
     {
-    	root->left = inserir(root->left, globalWei, id, wei);
-        root->rnk = root->rnk + wei; 
+    	root->left = inserir(root->left, nome, pontuacao);
     }
-    else if (root->dispositivo->id < id)
+    else if (root->pontuacao < pontuacao)
     {
-        root->right = inserir(root->right, globalWei, id, wei);
+        root->right = inserir(root->right, nome, pontuacao);
     }
-    //
-    root->height = 1 + max(height(root->left), height(root->right));
-
+    
     int bf = getBalance(root);
-    if (bf > 1 && id < root->left->dispositivo->id)
+    if (bf > 1 && pontuacao < root->pontuacao)
         return rotate_right(root);
-    if (bf < -1 && id > root->right->dispositivo->id)
+    if (bf < -1 && pontuacao > root->pontuacao)
         return rotate_left(root);
-    if (bf > 1 && id > root->left->dispositivo->id)
+    if (bf > 1 && pontuacao > root->pontuacao)
     {
         root->left = rotate_left(root->left);
         return rotate_right(root);
     }
-    if (bf < -1 && id < root->right->dispositivo->id)
+    if (bf < -1 && pontuacao < root->pontuacao)
     {
         root->right = rotate_right(root->right);
         return rotate_left(root);
@@ -169,12 +130,13 @@ int main()
 {
     Arvore *root = NULL;
     // Inicio
-    int id, wei, rnk, globalWei;
+    int pontuacao = 0;
+    char nome[60];
     char input[12];
     char command[4];
     int continuar = 1;
     //
-    globalWei = 0;
+	aqui
     while (continuar)
     {
         scanf(" %11[^\n]s", &input);
