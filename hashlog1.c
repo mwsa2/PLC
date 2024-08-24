@@ -1,6 +1,6 @@
 #include <string.h>
 #include <stdio.h>
-#include <malloc.h>
+#include <stdlib.h>
 
 typedef struct _conexao
 {
@@ -10,21 +10,33 @@ typedef struct _conexao
 
 int adicionarConexaoOrd(unsigned int timestamp, unsigned int cliente, Conexao *conexoes, int *tam){
     int pos = 0;
-    printf("%d\n", *tam);
-    conexoes = (Conexao*)realloc(conexoes, (*tam) * sizeof(Conexao));
-    printf("OK\n");  
-    if (conexoes == NULL) {
-        printf("Reallocation Failed\n");
-        exit(0);
-    }
+    printf("count %d\n", *tam);
     
-    conexoes[*tam]->timestamp = timestamp;
-    conexoes[*tam]->cliente = cliente;
-    //*tam = *tam + 1;
+	if(*tam == 0){
+		conexoes = (Conexao *)malloc(sizeof(Conexao));
+		if (conexoes == NULL) {
+			printf("memory cannot be allocated malloc");
+			exit(0);
+		}
+	}else{
+		printf(" novo tam %d\n", *tam);
+		conexoes = (Conexao*)realloc(conexoes, 1 * sizeof(Conexao));
+		if (conexoes == NULL) {
+			printf("memory cannot be allocated realloc");
+			exit(0);
+		}
+	}
+	
+	printf("OK\n");  
     
-    for(int i=0; i<*tam; i++){
-        printf("%u %u\n", conexoes[i]->timestamp, conexoes[i]->cliente);
-    }
+    //conexoes[*tam].timestamp = timestamp;
+    //conexoes[*tam].cliente = cliente;
+    *tam = *tam + 1;
+    
+    /*for(int i=0; i<*tam; i++){
+		printf("i: %d\n", i);
+		printf("%u %u\n", conexoes[i].timestamp, conexoes[i].cliente);
+    }*/
 
     return pos;
 }
@@ -37,10 +49,10 @@ int main()
     unsigned int cliente;
     unsigned int timestamp;
     int continuar = 1;
-    int tam = 1;
+    int tam = 0;
     int posConexao;
     //
-    Conexao *conexoes; //= (Conexao *)malloc(1 * sizeof(Conexao));
+    Conexao *conexoes;// = (Conexao *)malloc(sizeof(Conexao));
     while (continuar)
     {
         scanf(" %29[^\n]s", &input);
