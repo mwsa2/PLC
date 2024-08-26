@@ -10,24 +10,34 @@ typedef struct _conexao
 
 typedef struct _hashTable
 {
+    int hashing;
     int tam;
     Conexao *conexoes;
 } HashTable;
 
 
-int adicionarConexaoOrd(unsigned int timestamp, unsigned int cliente, HashTable *hashTable, int *hash){
+int adicionarConexaoOrd(unsigned int timestamp, unsigned int cliente, HashTable *hashTable, int *hash, int *insersoesHash){
     int pos = 0;
     //
     Conexao *conexoes;
+    //printf("add....\n");
     if(hashTable[*hash].conexoes == NULL){
         conexoes = (Conexao*)malloc(100000 * sizeof(Conexao)); 
+        if (conexoes == NULL) {
+            printf("memory cannot be allocated");
+            exit(0);
+        }
+        //printf("primeiro....\n");
         conexoes[0].timestamp = timestamp;
         conexoes[0].cliente = cliente;
         //
+        //printf("Ok1\n");
         hashTable[*hash].tam = 1;
         hashTable[*hash].conexoes = conexoes;
-        
+        *insersoesHash = *insersoesHash + 1;
+        //printf("Ok2\n");
     }else{
+        //printf("ja tem....\n");
         pos = hashTable[*hash].tam;
         conexoes = hashTable[*hash].conexoes;
         while (pos > 0 && conexoes[pos - 1].timestamp > timestamp)
@@ -35,9 +45,11 @@ int adicionarConexaoOrd(unsigned int timestamp, unsigned int cliente, HashTable 
             conexoes[pos] = conexoes[pos - 1];
             pos--;
         }
+        //printf("OK3\n");
         conexoes[pos].timestamp = timestamp;
         conexoes[pos].cliente = cliente;
         hashTable[*hash].tam = hashTable[*hash].tam + 1;
+        //printf("OK4\n");
     }
     printf("%d %d\n", *hash, hashTable[*hash].tam);
     return pos;
@@ -61,10 +73,10 @@ int main()
     Conexao *conexoes;
     char input[30];
     char command[4]; 
-    int tam = 0;
-    int posCliente;
+    int posCliente = -1;
     unsigned int cliente;
     unsigned int timestamp;
+    int insersoesHash = 0;
     int continuar = 1;
     //
     int m;
@@ -77,7 +89,10 @@ int main()
         printf("memory cannot be allocated");
         exit(0);
     }
-
+    hashTable->conexoes = NULL;
+    for(int i = 0; i < m; i++){
+        hashTable[i].hashing = 0;
+    }
     while(continuar) {
         
         scanf(" %29[^\n]s", &input);
@@ -90,23 +105,72 @@ int main()
             {   
                 sscanf(input, "%s %u %u", &command, &timestamp, &cliente);
                 hash = (timestamp % m);
-                if(tam <= Lmax)
-                    adicionarConexaoOrd(timestamp, cliente, hashTable, &hash);                    
-                else    
-                    printf("rehash\n");
+                if((m / insersoesHash) <= Lmax)
+                    adicionarConexaoOrd(timestamp, cliente, hashTable, &hash, &insersoesHash);                    
+                else{
+                    m = (2*m) + 1;
+                    printf("Insersoes: %d\n", insersoesHash);
+                    printf("novo m: %d\n", m);
+                    printf("Div: %d\n", (m / insersoesHash));
+                    hashTable = (HashTable*)realloc(hashTable, m * sizeof(HashTable));
+                    if (hashTable == NULL) {
+                        printf("realloc error");
+                        exit(0);
+                    }
+                    for(int i = 0; i < m; i++){
+                        hashTable[i].hashing = 1;
+                    }
+                    //reordena
+                    printf("reordernar\n");
+                    for(int i = 0;(i < m) && (hashTable[i].hashing == 1); i++){
+                        if(hashTable[i].conexoes != NULL){
+                            hash = (hashTable[i].conexoes[0].timestamp % m);
+                            printf("hash calculado\n");
+                            //verifica se o novo hash ja tem arquivo;
+                            if(hashTable[hash].conexoes == NULL){
+                               printf("nova posicao livre\n");     
+                               hashTable[hash].conexoes = hashTable[i].conexoes;
+                               free(hashTable[i].conexoes);
+                               printf("reordernar OK\n");      
+                            }else{
+                                printf("nova posicao ocupada\n");
+                                Conexao *conexoesTemp;
+                                conexoesTemp = hashTable[hash].conexoes;
+                                printf("tem = hash\n");
+                                hashTable[hash].conexoes = hashTable[i].conexoes;
+                                hashTable[hash].hashing = 0;
+                                printf("hash = i\n");
+                                //
+                                printf("reordernar a temp\n");
+                                hash = (conexoesTemp[0].timestamp % m);
+                                printf("hash calculado 2\n");
+                                hashTable[hash].conexoes = conexoesTemp;
+                                hashTable[hash].hashing = 0;
+                                printf("reordernar temp ok\n");
+                                free(conexoesTemp);
+                            }
+                            
+                        }
+                    }
+                    //adiciona
+                    adicionarConexaoOrd(timestamp, cliente, hashTable, &hash, &insersoesHash); 
+                }    
+                    
             }
             else if (strcmp(command, "QRY") == 0)
             {
-                /*sscanf(input, "%s %u", &command, &timestamp);
-                posCliente = bSearch(conexoes, 0, tam, timestamp); 
+                sscanf(input, "%s %u", &command, &timestamp);
+                hash = (timestamp % m);
+                if(hashTable[hash].tam > 0)
+                    posCliente = bSearch(hashTable[hash].conexoes, 0, hashTable[hash].tam, timestamp); 
                 if (posCliente != -1)
-                    printf("%u %d\n", conexoes[posCliente].cliente, posCliente);
+                    printf("%u %d\n", hashTable[hash].conexoes[posCliente].cliente, posCliente);
                 else
-                    printf("-1 -1\n");*/
+                    printf("-1 -1\n");
             }
         }
     };
-    free(conexoes);
+    free(hashTable);
     
     return 0;
 }
