@@ -123,42 +123,45 @@ int main()
                     for(int i = 0;i < m; i++){
                         if(hashTable[i].conexoes != NULL){
                             hash = (hashTable[i].conexoes[0].timestamp % m);
-                            printf("hash calculado\n");
+                            printf("inserindo fila: %d na posicao: %d\n", i, hash);
                             //verifica se o novo hash ja tem arquivo;
                             if(hashTable[hash].conexoes == NULL){
-                               printf("nova posicao livre\n");     
+                               printf("%d livre\n", hash);     
                                hashTable[hash].conexoes = hashTable[i].conexoes;
                                free(hashTable[i].conexoes);
-                               printf("reordernar OK\n");      
+                               printf("reordernar OK e conexoes %d free\n", i);      
                             }else{
-                                printf("nova posicao ocupada\n");
+                                printf("%d ocupada com %d\n", hash, hashTable[hash].conexoes[0].cliente);
                                 if(hashTable[hash].hashing == 0 ){ 
-                                    //inserir os elementos 1 a 1
+                                    printf("%d jah foi atualizada, inserindo os elemnetos de %d\n", hash, i);
                                     for(int j=0; j<hashTable[i].tam; j++){
                                         adicionarConexaoOrd(hashTable[i].conexoes[j].timestamp, hashTable[i].conexoes[j].cliente, hashTable, &hash, &insersoesHash);  
                                     }   
                                     free(hashTable[i].conexoes);
                                 }else{
+                                    printf("%d nao foi atualizada\n", hash);
+                                    printf("copiando hash %d para temp\n", hash);
                                     Conexao *conexoesTemp;
                                     conexoesTemp = hashTable[hash].conexoes;
-                                    printf("tem = hash\n");
+                                    printf("copiando i:%d para hash %d\n", i, hash);
                                     hashTable[hash].conexoes = hashTable[i].conexoes;
                                     hashTable[hash].hashing = 0;
-                                    printf("hash = i\n");
+                                    printf("copias OK\n");
                                     //
-                                    printf("reordernar a temp\n");
                                     hash = (conexoesTemp[0].timestamp % m);
-                                    printf("hash calculado 2\n");
+                                    printf("inserindo temp na hash:%d\n", hash);
                                     hashTable[hash].conexoes = conexoesTemp;
                                     hashTable[hash].hashing = 0;
-                                    printf("reordernar temp ok\n");
+                                    printf("inserindo temp OK\n");
                                     free(conexoesTemp);
+                                    printf("free temp\n");
                                 }
                             }
                             
                         }
                     }
                     //adiciona
+                    printf("tentando adicionar o %u\n", timestamp);
                     adicionarConexaoOrd(timestamp, cliente, hashTable, &hash, &insersoesHash); 
                 }    
                     
