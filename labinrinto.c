@@ -8,6 +8,14 @@ typedef struct _cordenada
     int y;
 } Cordenada;
 
+Cordenada *setCord(Cordenada *c, int x, int y)
+{
+    c->x = x;
+    c->y = y;
+    //         
+    return c;
+}
+
 typedef struct _pilha
 {
     Cordenada *cordenada;  
@@ -39,53 +47,51 @@ Pilha *dequee(Pilha *p)
 }
 
 int BFS(int *matriz, int *m, int *n, Cordenada *origem, Cordenada *destino){
-	/*if (!matriz[origem->x][origem->y] || !matriz[destino->x][destino->y])
-        return -1;*/
 	
-	int visited[*m][*n];
-	visited[origem->x][origem->y] = 1;
     
-	
+
 	//sentinela
     Pilha *pilhas;
     pilhas = (Pilha *)malloc(sizeof(Pilha));
     pilhas->next = NULL;
-	
-	enquee(pilhas, origem, 0);
-	
-	int rowNum[] = {-1, 0, 0, 1};
-	int colNum[] = {0, -1, 1, 0};
-	
-	while (pilhas->next != NULL)
+    
+    
+    enquee(pilhas, origem, 0);
+
+    int dist[*m][*n];
+	dist[origem->x][origem->y] = 1;
+    while(pilhas->next != NULL)
     {
-        //Pilha *curr = pilhas->next;
-		Pilha *curr = pilhas;
-        Cordenada *cord = curr->cordenada;
- 
-        if (cord->x == destino->x && cord->y == destino->y)
-            return curr->distancia;
- 
+        Pilha *curr = pilhas;
+        Cordenada *cord = curr->next->cordenada;
+
+        int i = cord->x;
+        int j = cord->y;   
+        
         dequee(pilhas);
- 
-        for (int i = 0; i < *m; i++)
-        {
-            int row = cord->x + rowNum[i];
-            int col = cord->y + colNum[i];
-             
-            if (!(*((matriz+i*row) + col)) && !visited[row][col])
-            {
-                visited[row][col] = 1;
-                //
-				Cordenada *cordenada;
-				cordenada = (Cordenada*)malloc(1 * sizeof(Cordenada)); 
-				cordenada->x = row;
-				cordenada->y = col;
-				enquee(pilhas, cordenada, curr->distancia + 1);
-				
-            }
-        }
+        Cordenada *cordenada;
+		cordenada = (Cordenada*)malloc(1 * sizeof(Cordenada)); 
+		
+        if( i-1 >= 0 && *((matriz+(i-1)**n) + j) != 1 && dist[i-1][j] == 0 ) dist[i-1][j] = dist[i][j] + 1, enquee(pilhas, setCord(cordenada, i-1, j), 0);
+        if( i+1 <  m && *((matriz+(i+1)**n) + j) != 1 && dist[i+1][j] == 0 ) dist[i+1][j] = dist[i][j] + 1, enquee(pilhas, setCord(cordenada, i+1, j), 0);
+        if( j-1 >= 0 && *((matriz+(i)**n) + (j-1)) != 1 && dist[i][j-1] == 0 ) dist[i][j-1] = dist[i][j] + 1, enquee(pilhas, setCord(cordenada, i, j-1), 0);
+        if( j+1 <  n && *((matriz+(i)**n) + (j+1)) != 1 && dist[i][j+1] == 0 ) dist[i][j+1] = dist[i][j] + 1, enquee(pilhas, setCord(cordenada, i, j+1), 0);
     }
- 
+
+    
+    //if(dist[destino->x][destino->y] == 0) printf("Labirinto Impossivel\n");
+    //else 
+    printf("%d\n", dist[destino->x][destino->y]);
+	
+    
+    //if(dist[ed.first][ed.second] == 0) cout << "Labirinto Impossivel" << endl;
+    //else cout << dist[ed.first][ed.second] - 1 << endl;
+	
+    
+
+
+    
+
     /*for(int i = 0; i<*m; i++){
         for(int j = 0; j<*n; j++){
             printf("%d ", *((matriz+i**n) + j));
